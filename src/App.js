@@ -1,74 +1,46 @@
-import React, { Component } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
-import { connect } from "react-redux";
-import { createStructuredSelector } from "reselect";
+import React from "react";
+import CardList from "./components/card-list/card-list.component";
+import { SearchBox } from "./components/search-box/search-box.component";
 
 import "./App.css";
-import Header from "./components/header/header.component";
-import HomePage from "./pages/homepage/homepage.component";
-import ShopPage from "./pages/shop/shop.component";
-import SignInAndSignUpPage from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
-import CheckoutPage from "./pages/checkout/checkout.component";
 
-import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
+class App extends React.Component {
+  constructor() {
+    super();
 
-import { setCurrentUser } from "./redux/user/user-action";
-import { selectCurrentUser } from "./redux/user/user.selectors";
-
-class App extends Component {
-  unSubscribeFromAuth = null;
+    this.state = {
+      albums: [],
+      searchField: "",
+    };
+  }
 
   componentDidMount() {
-    const { setCurrentUser } = this.props;
-    this.unSubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
-      if (userAuth) {
-        const userRef = await createUserProfileDocument(userAuth);
-        userRef.onSnapshot((snapShot) => {
-          setCurrentUser({
-            id: snapShot.id,
-            ...snapShot.data(),
-          });
-        });
-      }
-      setCurrentUser(userAuth);
-    });
+    fetch("https://jsonplaceholder.typicode.com/photos")
+      .then((response) => response.json())
+      .then((photos) => this.setState({ albums: photos }));
   }
 
-  componentWillUnmount() {
-    this.unSubscribeFromAuth();
-  }
+  handleChange = (e) => {
+    this.setState({ searchField: e.target.value });
+  };
 
   render() {
+    const { albums, searchField } = this.state;
+    const filterAlbums = albums.filter((album) =>
+      album.title.toLowerCase().includes(searchField.toLowerCase())
+    );
+
     return (
-      <div>
-        <Header />
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route path="/shop" component={ShopPage} />
-          <Route exact path="/checkout" component={CheckoutPage} />
-          <Route
-            exact
-            path="/signin"
-            render={() =>
-              this.props.currentUser ? (
-                <Redirect to="/" />
-              ) : (
-                <SignInAndSignUpPage />
-              )
-            }
-          />
-        </Switch>
+      <div className="app">
+        <h1>Photos List</h1>
+        <SearchBox
+          placeholder="search photos"
+          handleChange={this.handleChange}
+        />
+        <CardList albums={filterAlbums} />
       </div>
     );
   }
 }
 
-const mapStateToProps = createStructuredSelector({
-  currentUser: selectCurrentUser,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  setCurrentUser: (user) => dispatch(setCurrentUser(user)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;

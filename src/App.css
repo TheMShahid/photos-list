@@ -1,13 +1,26 @@
-body {
-  font-family: "Open Sans Condensed";
-  padding: 20px 60px;
-}
-
 a {
   text-decoration: none;
   color: black;
 }
 
+body {
+  font-family: Open Sans Condensed;
+}
+
+a:hover {
+  color: orange;
+}
+
 * {
   box-sizing: border-box;
+}
+
+.app {
+  text-align: center;
+}
+
+h1 {
+  font-family: "Bigelow Rules", cursive;
+  font-size: 72px;
+  color: #0ccac4;
 }
